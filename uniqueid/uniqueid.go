@@ -26,6 +26,7 @@ const (
 var (
 	serviceNode *Node
 	nodeID      int64
+	myIP        string
 )
 
 // Node 定义一个Node工作节点所需要的基本参数
@@ -114,4 +115,8 @@ func Number() int64 {
 
 func NodeID() int64 {
 	return nodeID
+}
+
+func IP() string {
+	return myIP
 }

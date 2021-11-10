@@ -19,7 +19,8 @@ func createNodeID() (int64, error) {
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				ipStr := strings.ReplaceAll(ipnet.IP.String(), ".", "")
+				myIP = ipnet.IP.String()
+				ipStr := strings.ReplaceAll(myIP, ".", "")
 				ipInt, _ := strconv.ParseInt(ipStr, 10, 64)
 				nodeID := ipInt % 1024
 				return nodeID, nil
