@@ -1,5 +1,5 @@
-local readKey = "read_" .. KEYS[1]
-local writeKey = "write_" .. KEYS[2]
+local readKey = KEYS[1]
+local writeKey = KEYS[2]
 local reqID = ARGV[1]
 local expireMS = ARGV[2]
 

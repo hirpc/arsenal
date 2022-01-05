@@ -1,4 +1,4 @@
-local readKey = "read_" .. KEYS[1]
+local readKey = KEYS[1]
 local reqID = ARGV[1]
 
 local function HSET(key, field, value)

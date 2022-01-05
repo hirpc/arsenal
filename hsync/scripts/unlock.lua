@@ -1,9 +1,9 @@
-local key = KEYS[1]
+local writeKey = KEYS[1]
 -- reentrantKey 重入次数
 local reentrantKey = KEYS[2]
 local reqID = ARGV[1]
 
-if (redis.call("GET", key) == reqID) then
+if (redis.call("GET", writeKey) == reqID) then
     -- 优先判定是否被重入
     local count = redis.call("GET", reentrantKey)
     if count then
@@ -16,7 +16,7 @@ if (redis.call("GET", key) == reqID) then
         else
             -- 未被重入，直接删除相关key就好
             redis.call("DEL", reentrantKey)
-            redis.call("DEL", key)
+            redis.call("DEL", writeKey)
             return 0
         end
     else

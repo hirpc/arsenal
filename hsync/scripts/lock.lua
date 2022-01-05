@@ -1,15 +1,21 @@
-local key = KEYS[1]
+local writeKey = KEYS[1]
+local readKey = KEYS[2]
 -- reentrantKey 重入次数
-local reentrantKey = KEYS[2]
+local reentrantKey = KEYS[3]
 local reqID = ARGV[1]
 local expireMS = ARGV[2]
 
-if redis.call("SET", key, reqID, "PX", expireMS, "NX") then
+-- 首先检查是否存在读锁，如果存在，则不允许加写锁
+if redis.call("HGET", readKey, reqID) then
+    return 0
+end
+-- 无读锁，尝试写锁
+if redis.call("SET", writeKey, reqID, "PX", expireMS, "NX") then
     redis.call("SET", reentrantKey, 1, "PX", expireMS)
     return 1
 else
     -- 存在写锁
-    if (redis.call("GET", key) == reqID) then 
+    if (redis.call("GET", writeKey) == reqID) then 
         -- 当前请求，重入锁
         local count = redis.call("GET", reentrantKey)
         if count then

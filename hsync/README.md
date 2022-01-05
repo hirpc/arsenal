@@ -6,6 +6,8 @@
 2. 锁的操作采用LUA脚本保证其原子性
 3. 支持redis的cluster环境
 4. 支持自旋等待尝试加锁
+5. 支持重入
+6. 读写锁
 
 ## 常规使用方式
 ``` foo.go
@@ -43,8 +45,7 @@ func Foo(ctx context.Context) error {
 
 ## TODO
 1. 支持自我续命
-2. 支持重入
-3. 读写锁
+2. 队列，避免饥饿
 
 ## 参考
 1. https://blog.csdn.net/grandachn/article/details/89032815

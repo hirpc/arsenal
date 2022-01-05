@@ -32,12 +32,16 @@ var (
 	lockLUA string
 	//go:embed scripts/unlock.lua
 	unlockLUA string
+	//go:embed scripts/rlock.lua
+	rlockLUA string
+	//go:embed scripts/runlock.lua
+	runlockLUA string
 )
 
 type hsync struct {
-	r   *redis.Client
-	key string
-	opt Options
+	r                        *redis.Client
+	wkey, reentrantKey, rkey string
+	opt                      Options
 }
 
 func New(r *redis.Client, k string, opts ...Option) HSync {
@@ -46,9 +50,11 @@ func New(r *redis.Client, k string, opts ...Option) HSync {
 		o(&opt)
 	}
 	return &hsync{
-		r:   r,
-		key: "{lock}:" + k,
-		opt: opt,
+		r:            r,
+		wkey:         "write_{lock}:" + k,
+		rkey:         "read_{lock}:",
+		reentrantKey: "reentrant_{lock}:" + k,
+		opt:          opt,
 	}
 }
 
@@ -59,9 +65,9 @@ func (h hsync) Lock(ctx context.Context, id string) error {
 			return ErrLockFailed
 		default:
 			res, err := redis.NewScript(lockLUA).Run(
-				ctx, h.r, []string{h.key}, id, h.opt.timeout.Milliseconds(),
+				ctx, h.r, []string{h.wkey, h.rkey, h.reentrantKey}, id, h.opt.timeout.Milliseconds(),
 			).Int()
-			if err == nil && res == Success {
+			if err == nil && res > 0 {
 				return nil
 			}
 			if !h.opt.retry {
@@ -75,12 +81,46 @@ func (h hsync) Lock(ctx context.Context, id string) error {
 
 func (h hsync) Unlock(id string) error {
 	res, err := redis.NewScript(unlockLUA).Run(
-		context.Background(), h.r, []string{h.key}, id,
+		context.Background(), h.r, []string{h.wkey, h.reentrantKey}, id,
 	).Int()
 	if err != nil {
 		return err
 	}
-	if res == Success {
+	if res != -1 {
+		return nil
+	}
+	return ErrUnlockFailed
+}
+
+func (h hsync) RLock(ctx context.Context, id string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ErrLockFailed
+		default:
+			res, err := redis.NewScript(rlockLUA).Run(
+				ctx, h.r, []string{h.rkey, h.wkey}, id, h.opt.timeout.Milliseconds(),
+			).Int()
+			if err == nil && res > 0 {
+				return nil
+			}
+			if !h.opt.retry {
+				// Maybe err or nil depends on the result got from Run()
+				return err
+			}
+			time.Sleep(h.opt.waitingPeriod)
+		}
+	}
+}
+
+func (h hsync) RUnlock(id string) error {
+	res, err := redis.NewScript(runlockLUA).Run(
+		context.Background(), h.r, []string{h.rkey, h.wkey}, id,
+	).Int()
+	if err != nil {
+		return err
+	}
+	if res != -1 {
 		return nil
 	}
 	return ErrUnlockFailed
