@@ -15,6 +15,11 @@ type HSync interface {
 	Lock(ctx context.Context, id string) error
 	// Unlock will release a locker
 	Unlock(id string) error
+
+	// RLock will try to add a read lock to a resource
+	RLock(ctx context.Context, id string) error
+	// RUnlock will try to release the read lock
+	RUnlock(id string) error
 }
 
 const (
