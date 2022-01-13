@@ -9,14 +9,20 @@ import (
 )
 
 type tlog struct {
-	accessKeyID, accessKeySecret string
-	topic                        string
-	opt                          Options
+	credential Credential
+	topic      string
+	opt        Options
 
 	producer *clssdk.AsyncProducerClient
 }
 
-func New(id, secret string, topic string, opts ...Option) *tlog {
+// Credential is the ticket for accessing the log service at QCloud
+type Credential struct {
+	SecretID  string `json:"SecretID"`
+	SecretKey string `json:"SecretKey"`
+}
+
+func New(topic string, credential Credential, opts ...Option) *tlog {
 	options := Options{
 		// 默认入口
 		endpoint: "na-siliconvalley.cls.tencentcs.com",
@@ -25,18 +31,17 @@ func New(id, secret string, topic string, opts ...Option) *tlog {
 		opt(&options)
 	}
 	return &tlog{
-		accessKeyID:     id,
-		accessKeySecret: secret,
-		topic:           topic,
-		opt:             options,
+		credential: credential,
+		topic:      topic,
+		opt:        options,
 	}
 }
 
 func (t *tlog) Establish() error {
 	producerConfig := clssdk.GetDefaultAsyncProducerClientConfig()
 	producerConfig.Endpoint = t.opt.endpoint
-	producerConfig.AccessKeyID = t.accessKeyID
-	producerConfig.AccessKeySecret = t.accessKeySecret
+	producerConfig.AccessKeyID = t.credential.SecretID
+	producerConfig.AccessKeySecret = t.credential.SecretKey
 	producerInstance, err := clssdk.NewAsyncProducerClient(producerConfig)
 	if err != nil {
 		return err
