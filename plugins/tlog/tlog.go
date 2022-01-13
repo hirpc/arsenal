@@ -8,7 +8,7 @@ import (
 	clssdk "github.com/tencentcloud/tencentcloud-cls-sdk-go"
 )
 
-type tlog struct {
+type TLog struct {
 	credential Credential
 	topic      string
 	opt        Options
@@ -22,7 +22,7 @@ type Credential struct {
 	SecretKey string `json:"SecretKey"`
 }
 
-func New(topic string, credential Credential, opts ...Option) *tlog {
+func New(topic string, credential Credential, opts ...Option) *TLog {
 	options := Options{
 		// 默认入口
 		endpoint: "na-siliconvalley.cls.tencentcs.com",
@@ -30,14 +30,14 @@ func New(topic string, credential Credential, opts ...Option) *tlog {
 	for _, opt := range opts {
 		opt(&options)
 	}
-	return &tlog{
+	return &TLog{
 		credential: credential,
 		topic:      topic,
 		opt:        options,
 	}
 }
 
-func (t *tlog) Establish() error {
+func (t *TLog) Establish() error {
 	producerConfig := clssdk.GetDefaultAsyncProducerClientConfig()
 	producerConfig.Endpoint = t.opt.endpoint
 	producerConfig.AccessKeyID = t.credential.SecretID
@@ -51,7 +51,7 @@ func (t *tlog) Establish() error {
 	return nil
 }
 
-func (t tlog) Fire(entry *logrus.Entry) error {
+func (t TLog) Fire(entry *logrus.Entry) error {
 	return t.producer.SendLog(
 		t.topic,
 		clssdk.NewCLSLog(
@@ -61,7 +61,7 @@ func (t tlog) Fire(entry *logrus.Entry) error {
 	)
 }
 
-func (t tlog) Levels() []logrus.Level {
+func (t TLog) Levels() []logrus.Level {
 	return []logrus.Level{
 		logrus.PanicLevel,
 		logrus.FatalLevel,
