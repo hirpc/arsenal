@@ -42,16 +42,18 @@ type Option struct {
 	NodeID int64
 }
 
+func init() {
+	var err error
+	nodeID, err = createNodeID()
+	if err != nil {
+		panic(err)
+	}
+	serviceNode = &Node{nodeID: nodeID}
+}
+
 // NewNode 实例化一个工作节点
 // 优先级是: 传入参数 > 已存在的NodeID > createNodeID
 func Register(options ...Option) error {
-	// 直接create node id 如果NodeID已经存在，则不会做任何操作，然后直接追加到options里
-
-	nodeid, err := createNodeID()
-	if err != nil {
-		return err
-	}
-	nodeID = nodeid
 	options = append(options, Option{NodeID: nodeID})
 
 	// Check the nodeID is valid or not
