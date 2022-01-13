@@ -27,6 +27,7 @@ func New(id, secret string, topic string, opts ...Option) *tlog {
 	return &tlog{
 		accessKeyID:     id,
 		accessKeySecret: secret,
+		topic:           topic,
 		opt:             options,
 	}
 }
