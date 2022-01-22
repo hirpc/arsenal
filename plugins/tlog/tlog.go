@@ -8,15 +8,21 @@ import (
 	clssdk "github.com/tencentcloud/tencentcloud-cls-sdk-go"
 )
 
-type tlog struct {
-	accessKeyID, accessKeySecret string
-	topic                        string
-	opt                          Options
+type TLog struct {
+	credential Credential
+	topic      string
+	opt        Options
 
 	producer *clssdk.AsyncProducerClient
 }
 
-func New(id, secret string, topic string, opts ...Option) *tlog {
+// Credential is the ticket for accessing the log service at QCloud
+type Credential struct {
+	SecretID  string `json:"SecretID"`
+	SecretKey string `json:"SecretKey"`
+}
+
+func New(topic string, credential Credential, opts ...Option) *TLog {
 	options := Options{
 		// 默认入口
 		endpoint: "na-siliconvalley.cls.tencentcs.com",
@@ -24,18 +30,18 @@ func New(id, secret string, topic string, opts ...Option) *tlog {
 	for _, opt := range opts {
 		opt(&options)
 	}
-	return &tlog{
-		accessKeyID:     id,
-		accessKeySecret: secret,
-		opt:             options,
+	return &TLog{
+		credential: credential,
+		topic:      topic,
+		opt:        options,
 	}
 }
 
-func (t *tlog) Establish() error {
+func (t *TLog) Establish() error {
 	producerConfig := clssdk.GetDefaultAsyncProducerClientConfig()
 	producerConfig.Endpoint = t.opt.endpoint
-	producerConfig.AccessKeyID = t.accessKeyID
-	producerConfig.AccessKeySecret = t.accessKeySecret
+	producerConfig.AccessKeyID = t.credential.SecretID
+	producerConfig.AccessKeySecret = t.credential.SecretKey
 	producerInstance, err := clssdk.NewAsyncProducerClient(producerConfig)
 	if err != nil {
 		return err
@@ -45,7 +51,7 @@ func (t *tlog) Establish() error {
 	return nil
 }
 
-func (t tlog) Fire(entry *logrus.Entry) error {
+func (t TLog) Fire(entry *logrus.Entry) error {
 	return t.producer.SendLog(
 		t.topic,
 		clssdk.NewCLSLog(
@@ -55,7 +61,7 @@ func (t tlog) Fire(entry *logrus.Entry) error {
 	)
 }
 
-func (t tlog) Levels() []logrus.Level {
+func (t TLog) Levels() []logrus.Level {
 	return []logrus.Level{
 		logrus.PanicLevel,
 		logrus.FatalLevel,
