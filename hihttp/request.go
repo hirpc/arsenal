@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (c *hiclient) execute(ctx context.Context) ([]byte, error) {
+func (c hiclient) execute(ctx context.Context) ([]byte, error) {
 	if len(c.baseUrl) > 0 {
 		c.baseUrl = strings.Trim(c.baseUrl, defaultTrimChars)
 	}
@@ -22,7 +22,9 @@ func (c *hiclient) execute(ctx context.Context) ([]byte, error) {
 	}
 
 	var payload io.Reader
-	req, err := http.NewRequestWithContext(ctx, c.method, c.baseUrl, payload)
+	httpCtx, cancel := context.WithTimeout(ctx, c.Timeout)
+	req, err := http.NewRequestWithContext(httpCtx, c.method, c.baseUrl, payload)
+	defer cancel()
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +54,7 @@ func (c *hiclient) execute(ctx context.Context) ([]byte, error) {
 // send get request
 func (c hiclient) Get(ctx context.Context, urlStr string) ([]byte, error) {
 	c.payload = nil
-	c.route = c.prefix + urlStr
+	c.baseUrl = c.prefix + urlStr
 	c.method = MethodGet
 	req, err := c.execute(ctx)
 	if err != nil {
@@ -79,6 +81,8 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 				}
 			}
 			payload = strings.NewReader(params)
+
+		// case SerializationTypeWWWFrom:
 		default:
 			payloadBuf := &bytes.Buffer{}
 			writer := multipart.NewWriter(payloadBuf)
