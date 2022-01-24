@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Timeout       time.Duration
 	Prefix        string
 	RetryCount    int
 	RetryWaitTime time.Duration
@@ -18,4 +19,5 @@ func New(cfg Config) {
 	client.RetryCount = cfg.RetryCount
 	client.RetryWaitTime = cfg.RetryWaitTime
 	client.RetryError = cfg.RetryError
+	client.Timeout = cfg.Timeout
 }

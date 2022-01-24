@@ -41,6 +41,8 @@ type hiclient struct {
 	// 重试等待时间
 	RetryWaitTime time.Duration
 	RetryError    RetryErrorFunc
+	// 超时时间
+	Timeout time.Duration
 }
 type RetryErrorFunc func(ctx context.Context, c hiclient) error
 
