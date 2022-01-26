@@ -13,7 +13,7 @@ func TestGet(t *testing.T) {
 		RetryCount:    3,
 		RetryWaitTime: time.Second,
 		RetryError: func(ctx context.Context, c hiclient) error {
-			fmt.Println(ctx, c.baseUrl, c.RetryCount)
+			fmt.Println(ctx, c.baseUrl, c.retryCount)
 			return nil
 		},
 	})
@@ -32,12 +32,12 @@ func TestPost(t *testing.T) {
 		RetryCount:    3,
 		RetryWaitTime: time.Second,
 		RetryError: func(ctx context.Context, c hiclient) error {
-			fmt.Println(ctx, c.baseUrl, c.RetryCount)
+			fmt.Println(ctx, c.baseUrl, c.retryCount)
 			return nil
 		},
 	})
 
-	res, err := Client().Post(context.Background(), "https://www.google.com/")
+	res, err := Client().SetHeader(SerializationType, SerializationTypeFormData).Post(context.Background(), "https://www.google.com")
 	if err != nil {
 		t.Error(err)
 	}

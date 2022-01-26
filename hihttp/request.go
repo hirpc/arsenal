@@ -11,17 +11,18 @@ import (
 	"strings"
 )
 
-func (c hiclient) execute(ctx context.Context) ([]byte, error) {
+type HiHTTP interface {
+	Get(ctx context.Context, urlStr string) ([]byte, error)
+	Post(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
+	execute(ctx context.Context, payload io.Reader) ([]byte, error)
+}
+
+func (c hiclient) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
 	if len(c.baseUrl) > 0 {
 		c.baseUrl = strings.Trim(c.baseUrl, defaultTrimChars)
 	}
 
-	if c.method == MethodPost || c.method == MethodPut {
-		// No OnError hook here since this is a request validation error
-		return nil, fmt.Errorf("multipart content is not allowed in HTTP verb [%v]", c.method)
-	}
-
-	var payload io.Reader
+	// var payload io.Reader
 	httpCtx, cancel := context.WithTimeout(ctx, c.Timeout)
 	req, err := http.NewRequestWithContext(httpCtx, c.method, c.baseUrl, payload)
 	defer cancel()
@@ -53,12 +54,11 @@ func (c hiclient) execute(ctx context.Context) ([]byte, error) {
 
 // send get request
 func (c hiclient) Get(ctx context.Context, urlStr string) ([]byte, error) {
-	c.payload = nil
-	c.baseUrl = c.prefix + urlStr
-	c.method = MethodGet
-	req, err := c.execute(ctx)
+	c.baseUrl = urlStr
+	c.method = GET
+	req, err := c.execute(ctx, nil)
 	if err != nil {
-		c.retry(ctx, c.execute)
+		c.retry(ctx, c, nil)
 	}
 	return req, err
 }
@@ -82,7 +82,17 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 			}
 			payload = strings.NewReader(params)
 
-		// case SerializationTypeWWWFrom:
+		case SerializationTypeWWWFrom:
+			if c.header.Get(SerializationType) == "" {
+				c.header.Set(SerializationType, SerializationTypeWWWFrom)
+			}
+			params := []string{}
+			if len(data) > 1 && len(data)%2 == 0 {
+				for i := 1; i < len(data); i = i + 2 {
+					params = append(params, fmt.Sprintf("%v=%v", data[i-1], data[i]))
+				}
+			}
+			payload = strings.NewReader(strings.Join(params, "&"))
 		default:
 			payloadBuf := &bytes.Buffer{}
 			writer := multipart.NewWriter(payloadBuf)
@@ -103,12 +113,11 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 		}
 
 	}
-	c.payload = payload
-	c.baseUrl = c.prefix + urlStr
-	c.method = MethodPost
-	req, err := c.execute(ctx)
+	c.baseUrl = urlStr
+	c.method = POST
+	req, err := c.execute(ctx, payload)
 	if err != nil {
-		c.retry(ctx, c.execute)
+		c.retry(ctx, c, payload)
 	}
 
 	return req, err
