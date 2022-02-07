@@ -11,40 +11,69 @@ import (
 	"strings"
 )
 
+type Request struct {
+	// API接口前缀
+	baseUrl string
+	method  string
+	header  *http.Header
+	cookies []*http.Cookie
+	client  hiclient
+	opt     Options
+	ctx     context.Context
+}
+
+// 公共参
+func New(opts ...Option) *Request {
+	request := Request{
+		baseUrl: "",
+		method:  "",
+		header:  &http.Header{},
+		cookies: []*http.Cookie{},
+		client:  client,
+	}
+	opt := client.opt
+
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	request.opt = opt
+	request.client = client
+	return &request
+}
+
 type HiHTTP interface {
 	Get(ctx context.Context, urlStr string) ([]byte, error)
 	Post(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
-	execute(ctx context.Context, payload io.Reader) ([]byte, error)
 }
 
-func (c hiclient) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
-	if len(c.baseUrl) > 0 {
-		c.baseUrl = strings.Trim(c.baseUrl, defaultTrimChars)
+func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
+	if len(r.baseUrl) > 0 {
+		r.baseUrl = strings.Trim(r.baseUrl, defaultTrimChars)
 	}
 
 	// var payload io.Reader
-	httpCtx, cancel := context.WithTimeout(ctx, c.Timeout)
-	req, err := http.NewRequestWithContext(httpCtx, c.method, c.baseUrl, payload)
+	httpCtx, cancel := context.WithTimeout(ctx, r.opt.timeout)
 	defer cancel()
+	req, err := http.NewRequestWithContext(httpCtx, r.method, r.baseUrl, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.header != nil {
-		req.Header = *c.header
+	if r.header != nil {
+		req.Header = *r.header
 	}
-	if len(c.cookies) > 0 {
-		for _, cookie := range c.cookies {
+	if len(r.cookies) > 0 {
+		for _, cookie := range r.cookies {
 			req.AddCookie(cookie)
 		}
 	}
 
-	res, err := c.client.Do(req)
+	res, err := r.client.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
@@ -53,21 +82,21 @@ func (c hiclient) execute(ctx context.Context, payload io.Reader) ([]byte, error
 }
 
 // send get request
-func (c hiclient) Get(ctx context.Context, urlStr string) ([]byte, error) {
-	c.baseUrl = urlStr
-	c.method = GET
-	req, err := c.execute(ctx, nil)
+func (r *Request) Get(ctx context.Context, urlStr string) ([]byte, error) {
+	r.baseUrl = urlStr
+	r.method = GET
+	req, err := r.execute(ctx, nil)
 	if err != nil {
-		c.retry(ctx, c, nil)
+		r.retry(ctx, nil)
 	}
 	return req, err
 }
 
 // send post request
-func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error) {
+func (r *Request) Post(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error) {
 	var payload io.Reader
 	if len(data) > 0 {
-		switch c.header.Get(SerializationType) {
+		switch r.header.Get(SerializationType) {
 		case SerializationTypeJSON:
 			var params string
 			switch data[0].(type) {
@@ -83,8 +112,8 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 			payload = strings.NewReader(params)
 
 		case SerializationTypeWWWFrom:
-			if c.header.Get(SerializationType) == "" {
-				c.header.Set(SerializationType, SerializationTypeWWWFrom)
+			if r.header.Get(SerializationType) == "" {
+				r.header.Set(SerializationType, SerializationTypeWWWFrom)
 			}
 			params := []string{}
 			if len(data) > 1 && len(data)%2 == 0 {
@@ -97,8 +126,8 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 			payloadBuf := &bytes.Buffer{}
 			writer := multipart.NewWriter(payloadBuf)
 			// Set the default 'Content-Type'
-			if c.header.Get(SerializationType) == "" {
-				c.header.Set(SerializationType, writer.FormDataContentType())
+			if r.header.Get(SerializationType) == "" {
+				r.header.Set(SerializationType, writer.FormDataContentType())
 			}
 
 			if dataMap, ok := data[0].(map[string]interface{}); ok {
@@ -113,11 +142,11 @@ func (c hiclient) Post(ctx context.Context, urlStr string, data ...interface{}) 
 		}
 
 	}
-	c.baseUrl = urlStr
-	c.method = POST
-	req, err := c.execute(ctx, payload)
+	r.baseUrl = urlStr
+	r.method = POST
+	req, err := r.execute(ctx, payload)
 	if err != nil {
-		c.retry(ctx, c, payload)
+		r.retry(ctx, payload)
 	}
 
 	return req, err
