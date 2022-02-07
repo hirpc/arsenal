@@ -7,19 +7,8 @@ import (
 )
 
 type hiclient struct {
-	client  *http.Client
-	header  *http.Header
-	cookies []*http.Cookie
-	// API接口前缀
-	baseUrl string
-	method  string
-	// 重试次数
-	retryCount int
-	// 重试等待时间
-	retryWaitTime time.Duration
-	retryError    RetryErrorFunc
-	// 超时时间
-	Timeout time.Duration
+	client *http.Client
+	opt    Options
 }
 type RetryErrorFunc func(ctx context.Context, c hiclient) error
 
@@ -34,30 +23,44 @@ var defaultTrimChars = string([]byte{
 	0x85, // Delete.
 	0xA0, // Non-breaking space.
 })
-var client = &hiclient{}
-
-func Client() *hiclient {
-	return client
+var client = hiclient{
+	client: &http.Client{},
+	opt: Options{
+		retryCount: 0,
+		retryWait:  time.Duration(0),
+		retryError: func(ctx context.Context, c hiclient) error {
+			return nil
+		},
+		timeout: 5 * time.Second,
+	},
 }
 
-func (c hiclient) SetHeader(key, value string) hiclient {
-	c.header.Add(key, value)
-	return c
+// 设置client的全局参数
+func Load(opts ...Option) {
+	for _, o := range opts {
+		o(&client.opt)
+	}
+}
+
+// SetHeader 以k-v格式设置header
+func (r *Request) SetHeader(key, value string) *Request {
+	r.header.Add(key, value)
+	return r
 }
 
 // Setting the header parameter should be 'map[string]string{}'
 // Usually you need to set up 'Content-Type'
 // Example:
 // c.Headers(map[string]string{"key":"value"})
-func (c hiclient) SetHeaders(args map[string]string) hiclient {
+func (r *Request) SetHeaders(args map[string]string) *Request {
 	for k, v := range args {
-		c.header.Add(k, v)
+		r.header.Add(k, v)
 	}
-	return c
+	return r
 }
 
 // SetCookies 设置cookie
-func (c hiclient) SetCookies(hc ...*http.Cookie) hiclient {
-	c.cookies = append(c.cookies, hc...)
-	return c
+func (r *Request) SetCookies(hc ...*http.Cookie) *Request {
+	r.cookies = append(r.cookies, hc...)
+	return r
 }
