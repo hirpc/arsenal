@@ -19,7 +19,6 @@ type Request struct {
 	cookies []*http.Cookie
 	client  hiclient
 	opt     Options
-	ctx     context.Context
 }
 
 // 公共参
@@ -38,7 +37,6 @@ func New(opts ...Option) *Request {
 	}
 
 	request.opt = opt
-	request.client = client
 	return &request
 }
 
