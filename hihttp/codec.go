@@ -9,6 +9,8 @@ const (
 	PUT = "PUT"
 	// MethodDelete HTTP method
 	DELETE = "DELETE"
+	// MethodDelete HTTP method
+	PATCH = "PATCH"
 )
 const (
 	SerializationType          string = "Content-Type"

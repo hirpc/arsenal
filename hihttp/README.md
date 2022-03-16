@@ -9,7 +9,7 @@
 - [x] 重试功能；
 - [x] 错误回调；
 - [x] GET、POST支持；
-- [ ] DELETE、PUT等支持；
+- [x] DELETE、PUT、PATCH支持；
 
 
 
