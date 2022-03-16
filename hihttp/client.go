@@ -7,8 +7,9 @@ import (
 )
 
 type hiclient struct {
-	client *http.Client
-	opt    Options
+	client     *http.Client
+	opt        Options
+	statusCode int
 }
 type RetryErrorFunc func(ctx context.Context, c hiclient) error
 
