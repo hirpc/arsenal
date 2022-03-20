@@ -51,10 +51,6 @@ type HiHTTP interface {
 func (r *Request) formatPayload(ctx context.Context, data ...interface{}) (io.Reader, error) {
 	var payload io.Reader
 	if len(data) > 0 {
-		if r.header.Get(SerializationType) == "" {
-			// set default SerializationType.
-			r.header.Set(SerializationType, SerializationTypeWWWFrom)
-		}
 		switch r.header.Get(SerializationType) {
 		case SerializationTypeJSON:
 			var params string
@@ -75,7 +71,11 @@ func (r *Request) formatPayload(ctx context.Context, data ...interface{}) (io.Re
 				for k, v := range dataMap {
 					params = append(params, fmt.Sprintf("%s=%v", k, v))
 				}
-			} else if len(data) > 1 && len(data)%2 == 0 {
+			}else if dataMap, ok := data[0].(map[string]string); ok{
+				for k, v := range dataMap {
+					params = append(params, fmt.Sprintf("%s=%s", k, v))
+				}
+			}else if len(data) > 1 && len(data)%2 == 0 {
 				for i := 1; i < len(data); i = i + 2 {
 					params = append(params, fmt.Sprintf("%v=%v", data[i-1], data[i]))
 				}
@@ -140,6 +140,10 @@ func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error
 // send get request
 // 也可以把参数直接放到URL后面，则data传nil即可
 func (r *Request) Get(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error) {
+	if r.header.Get(SerializationType) == "" {
+		// set default SerializationType.
+		r.header.Set(SerializationType, SerializationTypeWWWFrom)
+	}
 	payload, err := r.formatPayload(ctx, data...)
 	if err != nil {
 		return nil, err
