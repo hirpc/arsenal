@@ -51,6 +51,10 @@ type HiHTTP interface {
 func (r *Request) formatPayload(ctx context.Context, data ...interface{}) (io.Reader, error) {
 	var payload io.Reader
 	if len(data) > 0 {
+		if r.header.Get(SerializationType) == "" {
+			// set default SerializationType.
+			r.header.Set(SerializationType, SerializationTypeWWWFrom)
+		}
 		switch r.header.Get(SerializationType) {
 		case SerializationTypeJSON:
 			var params string
@@ -65,11 +69,7 @@ func (r *Request) formatPayload(ctx context.Context, data ...interface{}) (io.Re
 				}
 			}
 			payload = strings.NewReader(params)
-
 		case SerializationTypeWWWFrom:
-			if r.header.Get(SerializationType) == "" {
-				r.header.Set(SerializationType, SerializationTypeWWWFrom)
-			}
 			params := []string{}
 			if dataMap, ok := data[0].(map[string]interface{}); ok {
 				for k, v := range dataMap {
