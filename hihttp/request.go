@@ -45,9 +45,7 @@ type HiHTTP interface {
 }
 
 func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
-	if len(r.baseUrl) > 0 {
-		r.baseUrl = strings.Trim(r.baseUrl, defaultTrimChars)
-	}
+	r.baseUrl = strings.Trim(r.baseUrl, defaultTrimChars)
 
 	// var payload io.Reader
 	httpCtx, cancel := context.WithTimeout(ctx, r.opt.timeout)
@@ -59,10 +57,8 @@ func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error
 	if r.header != nil {
 		req.Header = *r.header
 	}
-	if len(r.cookies) > 0 {
-		for _, cookie := range r.cookies {
-			req.AddCookie(cookie)
-		}
+	for _, cookie := range r.cookies {
+		req.AddCookie(cookie)
 	}
 
 	res, err := r.client.client.Do(req)
