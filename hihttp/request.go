@@ -81,7 +81,7 @@ func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error
 // send get request
 // 也可以把参数直接放到URL后面，则data传nil即可
 func (r *Request) Get(ctx context.Context, urlStr string, data ...Param) ([]byte, error) {
-	r.baseUrl = urlStr + MergeParams(data...)
+	r.baseUrl = urlStr + mergeParams(data...)
 	r.method = GET
 	req, err := r.execute(ctx, nil)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *Request) Put(ctx context.Context, urlStr string, p Payload) ([]byte, er
 }
 
 func (r *Request) Delete(ctx context.Context, urlStr string, data ...Param) ([]byte, error) {
-	r.baseUrl = urlStr + MergeParams(data...)
+	r.baseUrl = urlStr + mergeParams(data...)
 	r.method = DELETE
 	req, err := r.execute(ctx, nil)
 	if err != nil {
