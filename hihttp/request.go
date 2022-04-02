@@ -90,6 +90,12 @@ func (r *Request) Get(ctx context.Context, urlStr string, data ...Param) ([]byte
 func (r *Request) Post(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = POST
+	if p == nil {
+		p = &formPayload{}
+	}
+	if r.header.Get(SerializationType) == "" {
+		r.header.Add(SerializationType, p.ContentType())
+	}
 	req, err := r.execute(ctx, p.Serialize())
 	if err != nil {
 		r.retry(ctx, p.Serialize())
@@ -100,6 +106,12 @@ func (r *Request) Post(ctx context.Context, urlStr string, p Payload) ([]byte, e
 func (r *Request) Put(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = PUT
+	if p == nil {
+		p = &formPayload{}
+	}
+	if r.header.Get(SerializationType) == "" {
+		r.header.Add(SerializationType, p.ContentType())
+	}
 	req, err := r.execute(ctx, p.Serialize())
 	if err != nil {
 		r.retry(ctx, p.Serialize())
@@ -120,6 +132,12 @@ func (r *Request) Delete(ctx context.Context, urlStr string, data ...Param) ([]b
 func (r *Request) Patch(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = PATCH
+	if p == nil {
+		p = &formPayload{}
+	}
+	if r.header.Get(SerializationType) == "" {
+		r.header.Add(SerializationType, p.ContentType())
+	}
 	req, err := r.execute(ctx, p.Serialize())
 	if err != nil {
 		r.retry(ctx, p.Serialize())

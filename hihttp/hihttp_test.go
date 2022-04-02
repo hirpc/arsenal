@@ -46,14 +46,18 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	// 发送一个post请求
-	// New().Post(context.Background(), "http://www.yumontime.com/test/login", "user_name", "yumontime", "password", "123123")
+	res, err := New().Post(context.Background(), "http://www.yumontime.com/test/login", nil)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(string(res))
 
 	//
-	New().Post(context.Background(), "http://www.yumontime.com/test/login", NewFormPayload(map[string]interface{}{
-		"user_name": "yumontime", "password": "123123",
-	}))
+	// New().Post(context.Background(), "http://www.yumontime.com/test/login", NewFormPayload(map[string]interface{}{
+	// 	"user_name": "yumontime", "password": "123123",
+	// }))
 
-	New().SetHeader(SerializationType, SerializationTypeJSON)
+	// New().SetHeader(SerializationType, SerializationTypeJSON)
 }
 
 func TestPut(t *testing.T) {
@@ -91,7 +95,7 @@ func TestPatch(t *testing.T) {
 }
 
 func TestGET(t *testing.T) {
-	res, err := New().Get(context.Background(), "http://127.0.0.1:8080/test_http_method", NewKVParams("name", "jankin"))
+	res, err := New().Get(context.Background(), "http://127.0.0.1:8080/test_http_method", NewKVParam("name", "jankin"))
 	if err != nil {
 		t.Error(err)
 	}

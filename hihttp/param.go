@@ -33,7 +33,7 @@ func NewMapParams(m map[string]interface{}) *mapParams {
 }
 
 // 对map进行相应的编码（urlencode等等）
-func (m mapParams) Marshal() string {
+func (m *mapParams) Marshal() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -44,34 +44,34 @@ func (m mapParams) Marshal() string {
 	return strings.Join(params, "&")
 }
 
-type kvParams struct {
+type kvParam struct {
 	Key   string
 	Value interface{}
 }
 
-func NewKVParams(key string, value interface{}) *kvParams {
-	return &kvParams{
+func NewKVParam(key string, value interface{}) *kvParam {
+	return &kvParam{
 		Key:   key,
 		Value: value,
 	}
 }
 
 // 对kv 格式进行相应的编码（urlencode等等）
-func (m kvParams) Marshal() string {
-	return fmt.Sprintf("%s&%v", m.Key, m.Value)
+func (m kvParam) Marshal() string {
+	return fmt.Sprintf("%s=%v", m.Key, m.Value)
 }
 
-type queryParams struct {
+type queryParam struct {
 	Query string
 }
 
-func NewQueryParams(query string) *queryParams {
-	return &queryParams{
+func NewQueryParam(query string) *queryParam {
+	return &queryParam{
 		Query: query,
 	}
 }
 
 // 直接使用url的query参数 返回
-func (m queryParams) Marshal() string {
+func (m queryParam) Marshal() string {
 	return m.Query
 }

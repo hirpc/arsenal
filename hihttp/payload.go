@@ -11,14 +11,20 @@ import (
 
 type Payload interface {
 	Serialize() io.Reader
+	ContentType() string
 }
 
 type jsonPayload struct {
 	Payload string
 }
+
 func (p *jsonPayload) Serialize() io.Reader {
 	return strings.NewReader(p.Payload)
 }
+func (p *jsonPayload) ContentType() string {
+	return SerializationTypeJSON
+}
+
 // NewPayload 会根据序列化类型，生成一个payload
 func NewJSONPayload(data interface{}) *jsonPayload {
 	p := jsonPayload{}
@@ -36,25 +42,32 @@ func NewJSONPayload(data interface{}) *jsonPayload {
 }
 
 type formPayload struct {
-	Payload bytes.Buffer
+	Payload map[string]string
 }
+
 func (p *formPayload) Serialize() io.Reader {
-	return &p.Payload
-}
-// NewFormPayload 会根据序列化类型，生成一个payload
-func NewFormPayload(data map[string]interface{}) *formPayload {
-	p := formPayload{
-		Payload: bytes.Buffer{},
-	}
-	writer := multipart.NewWriter(&p.Payload)
-	for k, v := range data {
-		_ = writer.WriteField(k, fmt.Sprint(v))
+	paylod := &bytes.Buffer{}
+	writer := multipart.NewWriter(paylod)
+	for k, v := range p.Payload {
+		_ = writer.WriteField(k, v)
 	}
 	if err := writer.Close(); err != nil {
 		return nil
 	}
-	return &p
+	return paylod
+}
+func (p *formPayload) ContentType() string {
+	return SerializationTypeFormData
 }
 
-// NewXMLPayload todo
-func NewXMLPayload(v interface{})
+// NewFormPayload 会根据序列化类型，生成一个payload
+func NewFormPayload(data map[string]interface{}) *formPayload {
+	p := formPayload{
+		Payload: map[string]string{},
+	}
+	for k, v := range data {
+		p.Payload[k] = fmt.Sprint(v)
+	}
+
+	return &p
+}
