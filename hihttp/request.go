@@ -37,11 +37,11 @@ func New(opts ...Option) *Request {
 }
 
 type HiHTTP interface {
-	Get(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
-	Post(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
-	Put(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
-	Delete(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
-	Patch(ctx context.Context, urlStr string, data ...interface{}) ([]byte, error)
+	Get(ctx context.Context, urlStr string, data ...Param) ([]byte, error)
+	Post(ctx context.Context, urlStr string, p Payload) ([]byte, error)
+	Put(ctx context.Context, urlStr string, p Payload) ([]byte, error)
+	Delete(ctx context.Context, urlStr string, data ...Param) ([]byte, error)
+	Patch(ctx context.Context, urlStr string, p Payload) ([]byte, error)
 }
 
 func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
