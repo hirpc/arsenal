@@ -99,6 +99,5 @@ func TestGET(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	t.Log(string(res))
 }
