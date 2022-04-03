@@ -46,21 +46,25 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	// 发送一个post请求
-	New().Post(context.Background(), "http://www.yumontime.com/test/login", "user_name", "yumontime", "password", "123123")
+	res, err := New().Post(context.Background(), "http://www.yumontime.com/test/login", nil)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(string(res))
 
 	//
-	New().Post(context.Background(), "http://www.yumontime.com/test/login", map[string]interface{}{
-		"user_name": "yumontime", "password": "123123",
-	})
+	// New().Post(context.Background(), "http://www.yumontime.com/test/login", NewFormPayload(map[string]interface{}{
+	// 	"user_name": "yumontime", "password": "123123",
+	// }))
 
-	New().SetHeader(SerializationType, SerializationTypeJSON)
+	// New().SetHeader(SerializationType, SerializationTypeJSON)
 }
 
 func TestPut(t *testing.T) {
 	r := New().SetCookies()
-	res, err := r.Put(context.Background(), "http://127.0.0.1:8080/test_http_method", map[string]interface{}{
+	res, err := r.Put(context.Background(), "http://127.0.0.1:8080/test_http_method", NewFormPayload(map[string]interface{}{
 		"name": "jankin",
-	})
+	}))
 	if err != nil {
 		t.Error(err)
 	}
@@ -69,9 +73,9 @@ func TestPut(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	res, err := New().Delete(context.Background(), "http://127.0.0.1:8080/test_http_method", map[string]interface{}{
+	res, err := New().Delete(context.Background(), "http://127.0.0.1:8080/test_http_method", NewMapParams(map[string]interface{}{
 		"name": "jankin",
-	})
+	}))
 	if err != nil {
 		t.Error(err)
 	}
@@ -80,9 +84,9 @@ func TestDelete(t *testing.T) {
 }
 
 func TestPatch(t *testing.T) {
-	res, err := New().Patch(context.Background(), "http://127.0.0.1:8080/test_http_method", map[string]interface{}{
+	res, err := New().Patch(context.Background(), "http://127.0.0.1:8080/test_http_method", NewFormPayload(map[string]interface{}{
 		"name": "jankin",
-	})
+	}))
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,10 +95,9 @@ func TestPatch(t *testing.T) {
 }
 
 func TestGET(t *testing.T) {
-	res, err := New().SetHeader(SerializationType, SerializationTypeWWWFrom).Get(context.Background(), "http://127.0.0.1:8080/test_http_method", "name", "jankin")
+	res, err := New().Get(context.Background(), "http://127.0.0.1:8080/test_http_method", NewKVParam("name", "jankin"))
 	if err != nil {
 		t.Error(err)
 	}
-
 	t.Log(string(res))
 }
