@@ -46,16 +46,18 @@ type formPayload struct {
 }
 
 func (p *formPayload) Serialize() io.Reader {
-	paylod := &bytes.Buffer{}
-	writer := multipart.NewWriter(paylod)
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
 	for k, v := range p.Payload {
 		_ = writer.WriteField(k, v)
 	}
 	if err := writer.Close(); err != nil {
 		return nil
 	}
-	return paylod
+	return payload
 }
+
+// todo multipart/form-data 可能会存在一些问题，尽量避免使用。
 func (p *formPayload) ContentType() string {
 	return SerializationTypeFormData
 }
@@ -67,6 +69,30 @@ func NewFormPayload(data map[string]interface{}) *formPayload {
 	}
 	for k, v := range data {
 		p.Payload[k] = fmt.Sprint(v)
+	}
+
+	return &p
+}
+
+type wwwFormPayload struct {
+	Payload []string
+}
+
+func (p *wwwFormPayload) Serialize() io.Reader {
+	payload := strings.NewReader(strings.Join(p.Payload, "&"))
+	return payload
+}
+func (p *wwwFormPayload) ContentType() string {
+	return SerializationTypeWWWFrom
+}
+
+// NewFormPayload 会根据序列化类型，生成一个payload
+func NewWWWFormPayload(data map[string]interface{}) *wwwFormPayload {
+	p := wwwFormPayload{
+		Payload: []string{},
+	}
+	for k, v := range data {
+		p.Payload = append(p.Payload, fmt.Sprintf("%s=%s", k, fmt.Sprint(v)))
 	}
 
 	return &p
