@@ -68,6 +68,15 @@ func Register(name string, robot *wecomrobot) {
 	registeredRobots[name] = robot
 }
 
+func Get(name string) *wecomrobot {
+	mu.RLock()
+	defer mu.RUnlock()
+	if v, ok := registeredRobots[name]; ok {
+		return v
+	}
+	return nil
+}
+
 type configuration struct {
 	Robots []struct {
 		Name     string `json:"name"`
