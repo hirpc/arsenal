@@ -2,6 +2,7 @@ package wecomrobot
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -65,6 +66,24 @@ func Register(name string, robot *wecomrobot) {
 	mu.Lock()
 	defer mu.Unlock()
 	registeredRobots[name] = robot
+}
+
+type configuration struct {
+	Robots []struct {
+		Name     string `json:"name"`
+		Endpoint string `json:"endpoint"`
+	} `json:"robots"`
+}
+
+func Load(src []byte) error {
+	var cfg configuration
+	if err := json.Unmarshal(src, &cfg); err != nil {
+		return err
+	}
+	for _, robot := range cfg.Robots {
+		Register(robot.Name, New(robot.Endpoint))
+	}
+	return nil
 }
 
 // DirectSend will send a message directly
