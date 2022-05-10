@@ -81,6 +81,7 @@ type configuration struct {
 	Robots []struct {
 		Name     string `json:"name"`
 		Endpoint string `json:"endpoint"`
+		Default  bool   `json:"default"`
 	} `json:"robots"`
 }
 
@@ -90,7 +91,11 @@ func Load(src []byte) error {
 		return err
 	}
 	for _, robot := range cfg.Robots {
-		Register(robot.Name, New(robot.Endpoint))
+		if robot.Default {
+			Register(robot.Name, New(robot.Endpoint, WithDefaultRegistration()))
+		} else {
+			Register(robot.Name, New(robot.Endpoint))
+		}
 	}
 	return nil
 }
