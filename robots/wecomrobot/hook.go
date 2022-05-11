@@ -2,7 +2,6 @@ package wecomrobot
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -20,10 +19,7 @@ func (w wecomrobot) Fire(entry *logrus.Entry) error {
 
 	return w.Send(
 		ctx,
-		fmt.Sprintf(
-			`{"msgtype":"markdown","markdown":{"content":"%v"}}`,
-			toContent(entry),
-		),
+		toContent(entry),
 	)
 }
 

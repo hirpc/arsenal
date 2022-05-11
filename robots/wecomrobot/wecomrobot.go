@@ -50,13 +50,16 @@ func (w wecomrobot) Send(ctx context.Context, msg string) error {
 	).Post(
 		ctx,
 		w.endpoint,
-		hihttp.NewJSONPayload(msg),
+		hihttp.NewJSONPayload(
+			fmt.Sprintf(
+				`{"msgtype":"markdown","markdown":{"content":"%v"}}`, msg,
+			),
+		),
 	)
 	if err != nil {
 		return err
 	}
 	log.Println(string(res))
-	fmt.Sprintln(res)
 	return nil
 }
 
