@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -54,6 +55,7 @@ func (w wecomrobot) Send(ctx context.Context, msg string) error {
 	if err != nil {
 		return err
 	}
+	log.Println(string(res))
 	fmt.Sprintln(res)
 	return nil
 }
