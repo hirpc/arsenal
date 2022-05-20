@@ -13,11 +13,11 @@ func TestGet(t *testing.T) {
 		WithTimeout(time.Second),
 		WithRetryCount(1),
 		WithRetryWait(time.Second),
-		WithRetryError(func(ctx context.Context, c hiclient) error {
+		WithRetryError(func(ctx context.Context, r *Request) error {
 			return nil
 		}),
 	)
-	res, err := New().Get(context.Background(), "http://www.google.com")
+	res, err := New().Get(context.Background(), "http://www.google.com",NewQueryParam(""))
 	if err != nil {
 		t.Error(1, err)
 	}
@@ -46,12 +46,13 @@ func TestGet(t *testing.T) {
 
 func TestPost(t *testing.T) {
 	// 发送一个post请求
-	res, err := New().Post(context.Background(), "http://www.yumontime.com/test/login", nil)
+	res, err := New().Post(context.Background(), "http://www.yumontime.com/test/login", NewWWWFormPayload(map[string]interface{}{
+		"username": "jankin",
+	}))
 	if err != nil {
 		t.Error(err)
 	}
 	t.Log(string(res))
-
 	//
 	// New().Post(context.Background(), "http://www.yumontime.com/test/login", NewFormPayload(map[string]interface{}{
 	// 	"user_name": "yumontime", "password": "123123",
