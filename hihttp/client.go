@@ -11,7 +11,7 @@ type hiclient struct {
 	opt        Options
 	statusCode int
 }
-type RetryErrorFunc func(ctx context.Context, c hiclient) error
+type RetryErrorFunc func(ctx context.Context, r *Request) error
 
 var defaultTrimChars = string([]byte{
 	'\t', // Tab.
@@ -29,7 +29,7 @@ var client = hiclient{
 	opt: Options{
 		retryCount: 0,
 		retryWait:  time.Duration(0),
-		retryError: func(ctx context.Context, c hiclient) error {
+		retryError: func(ctx context.Context, r *Request) error {
 			return nil
 		},
 		timeout: 5 * time.Second,

@@ -20,6 +20,6 @@ func (r *Request) retry(ctx context.Context, payload io.Reader) []byte {
 		return req
 	}
 
-	r.client.opt.retryError(ctx, r.client)
+	r.client.opt.retryError(ctx, r)
 	return nil
 }
