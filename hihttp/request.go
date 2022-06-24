@@ -75,9 +75,13 @@ func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error
 }
 
 // send get request
-// 也可以把参数直接放到URL后面，则data传nil即可
+// 也可以把参数直接放到URL后面，则data不传即可
 func (r *Request) Get(ctx context.Context, urlStr string, data ...Param) ([]byte, error) {
-	r.baseUrl = urlStr + "?" + mergeParams(data...)
+	r.baseUrl = urlStr
+	// 如果参数直接房子URL后面，则Param为空，不必拼接query参数
+	if len(data) >= 0 {
+		r.baseUrl += "?" + mergeParams(data...)
+	}
 	r.method = GET
 	req, err := r.execute(ctx, nil)
 	if err != nil {

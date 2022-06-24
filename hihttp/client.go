@@ -25,7 +25,9 @@ var defaultTrimChars = string([]byte{
 	0xA0, // Non-breaking space.
 })
 var client = hiclient{
-	client: &http.Client{},
+	client: &http.Client{
+		Timeout: 5 * time.Second,
+	},
 	opt: Options{
 		retryCount: 0,
 		retryWait:  time.Duration(0),
