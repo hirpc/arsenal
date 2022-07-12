@@ -29,8 +29,8 @@ func (i *inmemory) nset(name string, v interface{}) {
 
 func (i *inmemory) nget(name string) interface{} {
 	i.mu.RLock()
-	defer i.mu.RUnlock()
 	if v, ok := i.namedItems[name]; ok {
+		i.mu.RUnlock()
 		if i.opt.maxLife == time.Duration(0) {
 			return v.value
 		}
@@ -41,6 +41,7 @@ func (i *inmemory) nget(name string) interface{} {
 		i.ndel(name)
 		return nil
 	}
+	i.mu.RUnlock()
 	return nil
 }
 
