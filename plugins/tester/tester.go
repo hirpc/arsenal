@@ -1,6 +1,7 @@
 package tester
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -42,8 +43,8 @@ func (t *tester) DependsOn() []string {
 	return nil
 }
 
-func (t *tester) HandlerFromEndpoint() (*runtime.ServeMux, string, []grpc.DialOption) {
-	return t.mux, "localhost:8888", t.opts
+func (t *tester) HandlerFromEndpoint() (context.Context, *runtime.ServeMux, string, []grpc.DialOption) {
+	return context.Background(), t.mux, "localhost:8888", t.opts
 }
 
 // Run should be called after pb.RegisterXXXXXHandlerFromEndpoint(ctx, )
