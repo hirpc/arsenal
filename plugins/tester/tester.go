@@ -1,7 +1,6 @@
 package tester
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -27,9 +26,9 @@ func New() *tester {
 
 // Instance can be called after run the constructor function New().
 // It will return the tester instance.
-func Instance() *tester {
-	return instance
-}
+// func Instance() *tester {
+// 	return instance
+// }
 
 func (t *tester) Load() error {
 	return nil
@@ -43,19 +42,19 @@ func (t *tester) DependsOn() []string {
 	return nil
 }
 
-func (t *tester) HandlerFromEndpoint() (context.Context, *runtime.ServeMux, string, []grpc.DialOption) {
-	return context.Background(), t.mux, "localhost:8888", t.opts
+func HandlerFromEndpoint() (*runtime.ServeMux, string, []grpc.DialOption) {
+	return instance.mux, "localhost:8888", instance.opts
 }
 
 // Run should be called after pb.RegisterXXXXXHandlerFromEndpoint(ctx, )
-func (t *tester) Run() error {
+func Run() error {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
 				fmt.Println(err)
 			}
 		}()
-		if err := http.ListenAndServe(":8080", t.mux); err != nil {
+		if err := http.ListenAndServe(":8080", instance.mux); err != nil {
 			fmt.Println(err.Error())
 		}
 	}()
