@@ -10,7 +10,7 @@ type Param interface {
 	Marshal() string
 }
 
-// 对参数进行合并
+// mergeParams 对参数进行合并
 func mergeParams(ps ...Param) string {
 	params := []string{}
 	for _, v := range ps {
@@ -32,7 +32,7 @@ func NewMapParams(m map[string]interface{}) *mapParams {
 	}
 }
 
-// 对map进行相应的编码（urlencode等等）
+// Marshal 对map进行相应的编码（urlencode等等）
 func (m *mapParams) Marshal() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -56,7 +56,7 @@ func NewKVParam(key string, value interface{}) *kvParam {
 	}
 }
 
-// 对kv 格式进行相应的编码（urlencode等等）
+// Marshal 对kv 格式进行相应的编码（urlencode等等）
 func (m kvParam) Marshal() string {
 	return fmt.Sprintf("%s=%v", m.Key, m.Value)
 }
@@ -71,7 +71,7 @@ func NewQueryParam(query string) *queryParam {
 	}
 }
 
-// 直接使用url的query参数 返回
+// Marshal 直接使用url的query参数 返回
 func (m queryParam) Marshal() string {
 	return m.Query
 }

@@ -17,7 +17,7 @@ func TestGet(t *testing.T) {
 			return nil
 		}),
 	)
-	res, err := New().Get(context.Background(), "http://www.google.com",NewQueryParam(""))
+	res, err := New().Get(context.Background(), "http://www.google.com", NewQueryParam(""))
 	if err != nil {
 		t.Error(1, err)
 	}
@@ -101,4 +101,45 @@ func TestGET(t *testing.T) {
 		t.Error(err)
 	}
 	t.Log(string(res))
+}
+
+// TestTimeout 请求超时
+func TestTimeout(t *testing.T) {
+	urlStr := "https://www.google.com"
+
+	// 1. 使用WithTimeout()方法来实现超时控制
+	ctx := context.Background()
+	res1, err := New(WithRetryCount(2), WithTimeout(3*time.Second)).Get(ctx, urlStr)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(string(res1))
+
+	// 2. 将传入的ctx本身设置上超时时间
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	res2, err := New().Get(ctx, urlStr)
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(string(res2))
+}
+
+// TestRetry 重试
+func TestRetry(t *testing.T) {
+	urlStr := "https://www.google.com"
+
+	// 直接使用
+	// 请求失败后会再次进行重试请求
+	ctx := context.Background()
+	st := time.Now().Unix()
+	res1, err := New(WithRetryCount(1), WithTimeout(3*time.Second)).Get(ctx, urlStr)
+	if err != nil {
+		t.Error(err)
+	}
+	en := time.Now().Unix()
+	t.Log(string(res1), en-st)
+	// 如果无需重试，3秒后超时，则en-st = 3
+	// 如果重试1次，3秒后超时，重试又3秒，因此en-st=6
 }

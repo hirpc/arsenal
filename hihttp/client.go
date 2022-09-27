@@ -38,7 +38,7 @@ var client = hiclient{
 	},
 }
 
-// 设置client的全局参数
+// Load 设置client的全局参数
 func Load(opts ...Option) {
 	for _, o := range opts {
 		o(&client.opt)
@@ -51,10 +51,8 @@ func (r *Request) SetHeader(key, value string) *Request {
 	return r
 }
 
-// Setting the header parameter should be 'map[string]string{}'
-// Usually you need to set up 'Content-Type'
-// Example:
-// c.Headers(map[string]string{"key":"value"})
+// SetHeaders 设置header参数 map[string]string{}
+// 例如: c.Headers(map[string]string{"key":"value"})
 func (r *Request) SetHeaders(args map[string]string) *Request {
 	for k, v := range args {
 		r.header.Add(k, v)

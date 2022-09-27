@@ -11,8 +11,8 @@ import (
 // c.RetryError 是重试如果也失败了，需回调通知
 func (r *Request) retry(ctx context.Context, payload io.Reader) []byte {
 	// 记录重试次数
-	for count := 0; r.client.opt.retryCount > count; count++ {
-		time.Sleep(r.client.opt.retryWait)
+	for count := 0; r.opt.retryCount > count; count++ {
+		time.Sleep(r.opt.retryWait)
 		req, err := r.execute(ctx, payload)
 		if err != nil {
 			continue
@@ -20,6 +20,6 @@ func (r *Request) retry(ctx context.Context, payload io.Reader) []byte {
 		return req
 	}
 
-	r.client.opt.retryError(ctx, r)
+	r.opt.retryError(ctx, r)
 	return nil
 }

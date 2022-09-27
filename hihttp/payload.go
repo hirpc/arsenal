@@ -25,7 +25,8 @@ func (p *jsonPayload) ContentType() string {
 	return SerializationTypeJSON
 }
 
-// NewPayload 会根据序列化类型，生成一个payload
+// NewJSONPayload 会根据序列化类型，生成一个payload
+// Content-Type = application/json
 func NewJSONPayload(data interface{}) *jsonPayload {
 	p := jsonPayload{}
 	switch data.(type) {
@@ -57,12 +58,13 @@ func (p *formPayload) Serialize() io.Reader {
 	return payload
 }
 
-// todo multipart/form-data 可能会存在一些问题，尽量避免使用。
+// ContentType multipart/form-data 可能会存在一些问题，尽量避免使用。
 func (p *formPayload) ContentType() string {
 	return SerializationTypeFormData
 }
 
 // NewFormPayload 会根据序列化类型，生成一个payload
+// Content-Type = multipart/form-data
 func NewFormPayload(data map[string]interface{}) *formPayload {
 	p := formPayload{
 		Payload: map[string]string{},
@@ -86,7 +88,8 @@ func (p *wwwFormPayload) ContentType() string {
 	return SerializationTypeWWWFrom
 }
 
-// NewFormPayload 会根据序列化类型，生成一个payload
+// NewWWWFormPayload 会根据序列化类型，生成一个payload
+// Content-Type = application/x-www-form-urlencoded
 func NewWWWFormPayload(data map[string]interface{}) *wwwFormPayload {
 	p := wwwFormPayload{
 		Payload: []string{},

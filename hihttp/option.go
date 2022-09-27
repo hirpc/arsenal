@@ -2,14 +2,14 @@ package hihttp
 
 import "time"
 
-// 几个公共参数
+// Options 几个公共参数
 type Options struct {
-	// 重试次数
+	// retryCount 重试次数
 	retryCount int
-	// 重试等待时间
+	// retryWait 重试等待时间
 	retryWait  time.Duration
 	retryError RetryErrorFunc
-	// 超时时间
+	// timeout 超时时间
 	timeout time.Duration
 }
 type Option func(*Options)

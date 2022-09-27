@@ -17,7 +17,7 @@ type Request struct {
 	opt     Options
 }
 
-// 公共参
+// New 设置公共参数
 func New(opts ...Option) *Request {
 	request := Request{
 		baseUrl: "",
@@ -47,7 +47,6 @@ type HiHTTP interface {
 func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error) {
 	r.baseUrl = strings.Trim(r.baseUrl, defaultTrimChars)
 
-	// var payload io.Reader
 	httpCtx, cancel := context.WithTimeout(ctx, r.opt.timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(httpCtx, r.method, r.baseUrl, payload)
@@ -74,12 +73,12 @@ func (r *Request) execute(ctx context.Context, payload io.Reader) ([]byte, error
 	return body, nil
 }
 
-// send get request
+// Get 发送一个Get请求
 // 也可以把参数直接放到URL后面，则data不传即可
 func (r *Request) Get(ctx context.Context, urlStr string, data ...Param) ([]byte, error) {
 	r.baseUrl = urlStr
-	// 如果参数直接房子URL后面，则Param为空，不必拼接query参数
-	if len(data) >= 0 {
+	// 如果参数直接放在URL后面，则Param为空，不必拼接query参数
+	if len(data) > 0 {
 		r.baseUrl += "?" + mergeParams(data...)
 	}
 	r.method = GET
@@ -90,7 +89,7 @@ func (r *Request) Get(ctx context.Context, urlStr string, data ...Param) ([]byte
 	return req, err
 }
 
-// send post request
+// Post 发送一个POST请求
 func (r *Request) Post(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = POST
@@ -107,6 +106,7 @@ func (r *Request) Post(ctx context.Context, urlStr string, p Payload) ([]byte, e
 	return req, err
 }
 
+// Put 发送Put请求
 func (r *Request) Put(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = PUT
@@ -123,8 +123,12 @@ func (r *Request) Put(ctx context.Context, urlStr string, p Payload) ([]byte, er
 	return req, err
 }
 
+// Delete 发送一个delete请求
 func (r *Request) Delete(ctx context.Context, urlStr string, data ...Param) ([]byte, error) {
-	r.baseUrl = urlStr + "?" + mergeParams(data...)
+	r.baseUrl = urlStr
+	if len(data) > 0 {
+		r.baseUrl += "?" + mergeParams(data...)
+	}
 	r.method = DELETE
 	req, err := r.execute(ctx, nil)
 	if err != nil {
@@ -133,6 +137,7 @@ func (r *Request) Delete(ctx context.Context, urlStr string, data ...Param) ([]b
 	return req, err
 }
 
+// Patch 发送patch请求
 func (r *Request) Patch(ctx context.Context, urlStr string, p Payload) ([]byte, error) {
 	r.baseUrl = urlStr
 	r.method = PATCH
